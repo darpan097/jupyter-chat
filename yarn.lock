@@ -2297,7 +2297,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@jupyter/chat@^0.19.0-alpha.0, @jupyter/chat@workspace:packages/jupyter-chat":
+"@jupyter/chat@^0.19.0-alpha.1, @jupyter/chat@workspace:packages/jupyter-chat":
   version: 0.0.0-use.local
   resolution: "@jupyter/chat@workspace:packages/jupyter-chat"
   dependencies:
@@ -9594,14 +9594,14 @@ __metadata:
   linkType: hard
 
 "js-yaml@npm:^3.10.0, js-yaml@npm:^3.13.1":
-  version: 3.14.1
-  resolution: "js-yaml@npm:3.14.1"
+  version: 3.14.2
+  resolution: "js-yaml@npm:3.14.2"
   dependencies:
     argparse: ^1.0.7
     esprima: ^4.0.0
   bin:
     js-yaml: bin/js-yaml.js
-  checksum: bef146085f472d44dee30ec34e5cf36bf89164f5d585435a3d3da89e52622dff0b188a580e4ad091c3341889e14cb88cac6e4deb16dc5b1e9623bb0601fc255c
+  checksum: 626fc207734a3452d6ba84e1c8c226240e6d431426ed94d0ab043c50926d97c509629c08b1d636f5d27815833b7cfd225865631da9fb33cb957374490bf3e90b
   languageName: node
   linkType: hard
 
@@ -9799,7 +9799,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "jupyter-chat-example@workspace:docs/jupyter-chat-example"
   dependencies:
-    "@jupyter/chat": ^0.19.0-alpha.0
+    "@jupyter/chat": ^0.19.0-alpha.1
     "@jupyterlab/application": ^4.2.0
     "@jupyterlab/apputils": ^4.3.0
     "@jupyterlab/builder": ^4.2.0
@@ -9870,7 +9870,7 @@ __metadata:
     "@types/react": ^18.2.0
     "@types/react-addons-linked-state-mixin": ^0.14.22
     css-loader: ^6.7.1
-    jupyterlab-chat: ^0.19.0-alpha.0
+    jupyterlab-chat: ^0.19.0-alpha.1
     mkdirp: ^1.0.3
     npm-run-all: ^4.1.5
     react: ^18.2.0
@@ -9883,11 +9883,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"jupyterlab-chat@^0.19.0-alpha.0, jupyterlab-chat@workspace:packages/jupyterlab-chat":
+"jupyterlab-chat@^0.19.0-alpha.1, jupyterlab-chat@workspace:packages/jupyterlab-chat":
   version: 0.0.0-use.local
   resolution: "jupyterlab-chat@workspace:packages/jupyterlab-chat"
   dependencies:
-    "@jupyter/chat": ^0.19.0-alpha.0
+    "@jupyter/chat": ^0.19.0-alpha.1
     "@jupyter/collaborative-drive": ^4.0.2
     "@jupyter/ydoc": ^2.0.0 || ^3.0.0
     "@jupyterlab/application": ^4.2.0
