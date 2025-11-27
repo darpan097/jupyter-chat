@@ -5,65 +5,18 @@ import json
 from pathlib import Path
 
 import click
-from jupyter_releaser.util import get_version, run
-from pkg_resources import parse_version  # type: ignore
+from jupyter_releaser.util import run
 
 LERNA_CMD = "jlpm run lerna version --no-push --force-publish --no-git-tag-version"
 
-VERSION_SPEC = ["major", "minor", "release", "next", "patch"]
+# match these with main branch on github
+VERSION_MAJOR = 0
+VERSION_MINOR = 19
+VERSION_PATCH = 1
+VERSION_ALPHA = 1
 
-
-def bump_twd_version(prefix: str, current):
-    initial = prefix + "twd"
-    if initial in current:
-        current_twd_num = int(current.split(initial)[1])
-        new = current.replace(f"{initial}{current_twd_num}", f"{initial}{current_twd_num + 1}")
-    else:
-        new = current + initial + "0"
-    return new
-
-
-def increment_version(current, spec):
-    curr = parse_version(current)
-
-    if spec == "major":
-        spec = f"{curr.major + 1}.0.0.a0"
-
-    elif spec == "minor":
-        spec = f"{curr.major}.{curr.minor + 1}.0.a0"
-
-    elif spec == "release":
-        p, x = curr.pre
-        if p == "a":
-            p = "b"
-        elif p == "b":
-            p = "rc"
-        elif p == "rc":
-            p = None
-        suffix = f"{p}0" if p else ""
-        spec = f"{curr.major}.{curr.minor}.{curr.micro}{suffix}"
-
-    elif spec == "next":
-        spec = f"{curr.major}.{curr.minor}."
-        if curr.pre:
-            p, x = curr.pre
-            spec += f"{curr.micro}{p}{x}"
-        else:
-            spec += f"{curr.micro}"
-
-        spec = bump_twd_version("+", spec)
-
-    elif spec == "patch":
-        spec = f"{curr.major}.{curr.minor}."
-        if curr.pre:
-            spec += f"{curr.micro}"
-        else:
-            spec += f"{curr.micro + 1}"
-    else:
-        raise ValueError("Unknown version spec")
-
-    return spec
-
+# increment this from 0 for our changes
+VERSION_TWD = 0
 
 @click.command()
 @click.option("--force", default=False, is_flag=True)
@@ -76,21 +29,8 @@ def bump(force, skip_if_dirty, spec):
             return
         raise Exception("Must be in a clean git state with no untracked files")
 
-    current = get_version()
-
-    if spec in VERSION_SPEC:
-        version = parse_version(increment_version(current, spec))
-    else:
-        version = parse_version(spec)
-
-    # convert the Python version
-    js_version = f"{version.major}.{version.minor}.{version.micro}"
-    if version.pre:
-        p, x = version.pre
-        p = p.replace("a", "alpha").replace("b", "beta")
-        js_version += f"-{p}.{x}"
-
-    js_version = bump_twd_version("-", js_version)
+    js_version = f"{VERSION_MAJOR}.{VERSION_MINOR}.{VERSION_PATCH}-alpha.{VERSION_ALPHA}-twd.{VERSION_TWD}"
+    python_version = f"{VERSION_MAJOR}.{VERSION_MINOR}.{VERSION_PATCH}a{VERSION_ALPHA}+twd{VERSION_TWD}"
 
     # bump the JS packages
     lerna_cmd = f"{LERNA_CMD} {js_version}"
@@ -109,12 +49,7 @@ def bump(force, skip_if_dirty, spec):
                 f"Version file {version_file} has unexpected content;"
                 f" expected __version__ assignment in the first line, found {variable}"
             )
-        current = current.strip("'\"")
-        if spec in VERSION_SPEC:
-            version_spec = increment_version(current, spec)
-        else:
-            version_spec = spec
-        version_file.write_text(f'__version__ = "{version_spec}"\n')
+        version_file.write_text(f'__version__ = "{python_version}"\n')
 
     # bump the local package.json file
     path = HERE.joinpath("package.json")
