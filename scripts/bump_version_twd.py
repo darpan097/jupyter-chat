@@ -13,6 +13,15 @@ LERNA_CMD = "jlpm run lerna version --no-push --force-publish --no-git-tag-versi
 VERSION_SPEC = ["major", "minor", "release", "next", "patch"]
 
 
+def bump_twd_version(current):
+    if "+twd" in current:
+        current_twd_num = int(current.split("+twd")[1])
+        new = current.replace(f"+twd{current_twd_num}", f"+twd{current_twd_num + 1}")
+    else:
+        new = current + "+twd0"
+    return new
+
+
 def increment_version(current, spec):
     curr = parse_version(current)
 
@@ -41,11 +50,7 @@ def increment_version(current, spec):
         else:
             spec += f"{curr.micro}"
 
-        if "+twd" in spec:
-            current_twd_num = int(spec.split("+twd")[1])
-            spec = spec.replace(f"+twd{current_twd_num}", f"+twd{current_twd_num + 1}")
-        else:
-            spec += "+twd0"
+        spec = bump_twd_version(spec)
 
     elif spec == "patch":
         spec = f"{curr.major}.{curr.minor}."
@@ -83,6 +88,8 @@ def bump(force, skip_if_dirty, spec):
         p, x = version.pre
         p = p.replace("a", "alpha").replace("b", "beta")
         js_version += f"-{p}.{x}"
+
+    js_version = bump_twd_version(js_version)
 
     # bump the JS packages
     lerna_cmd = f"{LERNA_CMD} {js_version}"
