@@ -4,7 +4,6 @@
 import json
 from pathlib import Path
 
-import click
 from jupyter_releaser.util import run
 
 LERNA_CMD = "jlpm run lerna version --no-push --force-publish --no-git-tag-version"
@@ -12,22 +11,19 @@ LERNA_CMD = "jlpm run lerna version --no-push --force-publish --no-git-tag-versi
 # match these with main branch on github
 VERSION_MAJOR = 0
 VERSION_MINOR = 19
-VERSION_PATCH = 1
+VERSION_PATCH = 0
 VERSION_ALPHA = 1
 
 # increment this from 0 for our changes
-VERSION_TWD = 0
+VERSION_TWD = 1
 
-@click.command()
-@click.option("--force", default=False, is_flag=True)
-@click.option("--skip-if-dirty", default=False, is_flag=True)
-@click.argument("spec", nargs=1)
-def bump(force, skip_if_dirty, spec):
+
+def bump(force=False, skip_if_dirty=False):
     status = run("git status --porcelain").strip()
     if len(status) > 0:
         if skip_if_dirty:
             return
-        raise Exception("Must be in a clean git state with no untracked files")
+        # raise Exception("Must be in a clean git state with no untracked files")
 
     js_version = f"{VERSION_MAJOR}.{VERSION_MINOR}.{VERSION_PATCH}-alpha.{VERSION_ALPHA}-twd.{VERSION_TWD}"
     python_version = f"{VERSION_MAJOR}.{VERSION_MINOR}.{VERSION_PATCH}a{VERSION_ALPHA}+twd{VERSION_TWD}"
