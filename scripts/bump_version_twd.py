@@ -12,7 +12,7 @@ from jupyter_releaser.util import get_version, run
 def increment_twd_version(current):
     """
     Increment TWD version:
-    - Python: 0.19.0a1 -> 0.19.90a1+twd1, 0.19.90a1+twd1 -> 0.19.90a1+twd2
+    - Python: 0.19.0a1 -> 0.19.0a1+twd1, 0.19.0a1+twd1 -> 0.19.0a1+twd2
     - NPM: 0.19.0-alpha.1 -> 0.19.0-alpha.1+twd1, 0.19.0-alpha.1+twd1 -> 0.19.0-alpha.1+twd2
     """
     # Check if already has +twdN suffix
@@ -24,18 +24,7 @@ def increment_twd_version(current):
         new_version = re.sub(r'\+twd\d+$', f'+twd{twd_num + 1}', current)
     else:
         # Add +twd1 suffix
-        # For Python versions, also change micro version to 90 if it's not already
-        # E.g., 0.19.0a1 -> 0.19.90a1+twd1
-        py_match = re.match(r'^(\d+)\.(\d+)\.(\d+)(.*)', current)
-        if py_match:
-            major, minor, micro, suffix = py_match.groups()
-            if micro != '90':
-                new_version = f"{major}.{minor}.90{suffix}+twd1"
-            else:
-                new_version = f"{current}+twd1"
-        else:
-            # For NPM format or other formats, just append +twd1
-            new_version = f"{current}+twd1"
+        new_version = f"{current}+twd1"
 
     return new_version
 
