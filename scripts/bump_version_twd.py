@@ -37,9 +37,15 @@ def increment_version(current, spec):
         spec = f"{curr.major}.{curr.minor}."
         if curr.pre:
             p, x = curr.pre
-            spec += f"{curr.micro}{p}{x + 1}"
+            spec += f"{curr.micro}{p}{x}"
         else:
-            spec += f"{curr.micro + 1}"
+            spec += f"{curr.micro}"
+
+        if "+twd" in spec:
+            current_twd_num = int(spec.split("+twd")[1])
+            spec = spec.replace(f"+twd{current_twd_num}", f"+twd{current_twd_num + 1}")
+        else:
+            spec += "+twd0"
 
     elif spec == "patch":
         spec = f"{curr.major}.{curr.minor}."
