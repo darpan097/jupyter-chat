@@ -34,6 +34,8 @@ def bump(force=False, skip_if_dirty=False):
         lerna_cmd += " --yes"
     run(lerna_cmd)
 
+    run(f"jlpm")  # update yank.lock
+
     HERE = Path(__file__).parent.parent.resolve()
 
     # bump the Python packages
