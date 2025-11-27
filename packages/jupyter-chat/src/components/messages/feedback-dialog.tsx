@@ -61,16 +61,23 @@ export function FeedbackDialog(props: IFeedbackDialogProps): JSX.Element {
       return;
     }
 
-    const feedbackUrl = process.env.TWD_FEEDBACK_LOGGING_FLOW;
-    if (!feedbackUrl) {
-      setError('Feedback URL not configured.');
-      return;
-    }
-
     setLoading(true);
     setError(null);
 
     try {
+      // Fetch config from server
+      const configResponse = await fetch('/jupyterlab-chat/config');
+      if (!configResponse.ok) {
+        throw new Error('Failed to fetch configuration');
+      }
+      const config = await configResponse.json();
+      const feedbackUrl = config.feedbackUrl;
+
+      if (!feedbackUrl) {
+        setError('Feedback URL not configured.');
+        return;
+      }
+
       const conversationId = getConversationId();
       const question = getPreviousUserMessage();
       const answer = messageBody || '';
