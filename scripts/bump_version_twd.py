@@ -2,74 +2,105 @@
 # Distributed under the terms of the Modified BSD License.
 
 import json
-import re
 from pathlib import Path
 
 import click
-from jupyter_releaser.util import get_version
+from jupyter_releaser.util import get_version, run
+from pkg_resources import parse_version  # type: ignore
+
+LERNA_CMD = "jlpm run lerna version --no-push --force-publish --no-git-tag-version"
+
+VERSION_SPEC = ["major", "minor", "release", "next", "patch"]
 
 
-def increment_twd_version(current):
-    """Increment TWD local version identifier.
+def increment_version(current, spec):
+    curr = parse_version(current)
 
-    Examples:
-        Python: 0.19.0a1 -> 0.19.0a1+twd1
-                0.19.0a1+twd1 -> 0.19.0a1+twd2
-        NPM:    0.19.0-alpha.1 -> 0.19.0-alpha.1+twd1
-                0.19.0-alpha.1+twd1 -> 0.19.0-alpha.1+twd2
-    """
-    match = re.match(r'^(.+)\+twd(\d+)$', current)
-    if match:
-        base = match.group(1)
-        twd_num = int(match.group(2))
-        return f"{base}+twd{twd_num + 1}"
+    if spec == "major":
+        spec = f"{curr.major + 1}.0.0.a0"
+
+    elif spec == "minor":
+        spec = f"{curr.major}.{curr.minor + 1}.0.a0"
+
+    elif spec == "release":
+        p, x = curr.pre
+        if p == "a":
+            p = "b"
+        elif p == "b":
+            p = "rc"
+        elif p == "rc":
+            p = None
+        suffix = f"{p}0" if p else ""
+        spec = f"{curr.major}.{curr.minor}.{curr.micro}{suffix}"
+
+    elif spec == "next":
+        spec = f"{curr.major}.{curr.minor}."
+        if curr.pre:
+            p, x = curr.pre
+            spec += f"{curr.micro}{p}{x + 1}"
+        else:
+            spec += f"{curr.micro + 1}"
+
+    elif spec == "patch":
+        spec = f"{curr.major}.{curr.minor}."
+        if curr.pre:
+            spec += f"{curr.micro}"
+        else:
+            spec += f"{curr.micro + 1}"
     else:
-        return f"{current}+twd1"
+        raise ValueError("Unknown version spec")
+
+    return spec
 
 
 @click.command()
 @click.option("--force", default=False, is_flag=True)
 @click.option("--skip-if-dirty", default=False, is_flag=True)
-def bump(force, skip_if_dirty):
-    from jupyter_releaser.util import run
-
+@click.argument("spec", nargs=1)
+def bump(force, skip_if_dirty, spec):
     status = run("git status --porcelain").strip()
     if len(status) > 0:
         if skip_if_dirty:
             return
-        if not force:
-            raise Exception("Must be in a clean git state with no untracked files")
+        raise Exception("Must be in a clean git state with no untracked files")
 
     current = get_version()
 
-    # Increment Python version
-    new_python_version = increment_twd_version(current)
+    if spec in VERSION_SPEC:
+        version = parse_version(increment_version(current, spec))
+    else:
+        version = parse_version(spec)
+
+    # convert the Python version
+    js_version = f"{version.major}.{version.minor}.{version.micro}"
+    if version.pre:
+        p, x = version.pre
+        p = p.replace("a", "alpha").replace("b", "beta")
+        js_version += f"-{p}.{x}"
+
+    # bump the JS packages
+    lerna_cmd = f"{LERNA_CMD} {js_version}"
+    if force:
+        lerna_cmd += " --yes"
+    run(lerna_cmd)
 
     HERE = Path(__file__).parent.parent.resolve()
 
     # bump the Python packages
     for version_file in HERE.glob("python/**/_version.py"):
         content = version_file.read_text().splitlines()
-        variable, current_val = content[0].split(" = ")
+        variable, current = content[0].split(" = ")
         if variable != "__version__":
             raise ValueError(
                 f"Version file {version_file} has unexpected content;"
                 f" expected __version__ assignment in the first line, found {variable}"
             )
-        version_file.write_text(f'__version__ = "{new_python_version}"\n')
-
-    # bump the JS packages - convert Python version format to NPM format
-    # e.g., 0.19.0a1+twd1 -> 0.19.0-alpha.1+twd1
-    js_version = new_python_version
-    js_version = re.sub(r'a(\d+)', r'-alpha.\1', js_version)
-    js_version = re.sub(r'b(\d+)', r'-beta.\1', js_version)
-    js_version = re.sub(r'rc(\d+)', r'-rc.\1', js_version)
-
-    # bump lerna packages
-    lerna_cmd = f"jlpm run lerna version {js_version} --no-push --force-publish --no-git-tag-version"
-    if force:
-        lerna_cmd += " --yes"
-    run(lerna_cmd)
+        current = current.strip("'\"")
+        if spec in VERSION_SPEC:
+            version_spec = increment_version(current, spec)
+        else:
+            version_spec = spec
+        version_file.write_text(f'__version__ = "{version_spec}"\n')
 
     # bump the local package.json file
     path = HERE.joinpath("package.json")
@@ -81,10 +112,9 @@ def bump(force, skip_if_dirty):
 
         with path.open(mode="w") as f:
             json.dump(data, f, indent=2)
+
     else:
         raise FileNotFoundError(f"Could not find package.json under dir {path!s}")
-
-    print(f"Bumped version: {current} -> {new_python_version}")
 
 
 if __name__ == "__main__":
