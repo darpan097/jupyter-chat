@@ -150,24 +150,32 @@ export class ActiveCellManager implements IActiveCellManager {
       return null;
     }
 
+    const source = sharedModel.getSource();
+
     // case where withError = false
     if (!withError) {
       return {
         type: sharedModel.cell_type,
-        source: sharedModel.getSource(),
+        source,
         language
       };
     }
 
-    // case where withError = true
-    const error = this._activeCellError;
-    if (error) {
-      return {
-        type: 'code',
-        source: sharedModel.getSource(),
-        language,
-        error
-      };
+    // case where withError = true — compute the error directly from outputs
+    if ('outputs' in sharedModel) {
+      const outputs = (sharedModel as any).outputs as any[];
+      const error = outputs.find(
+        (output: any) => output.output_type === 'error'
+      ) as CellError | undefined;
+
+      if (error) {
+        return {
+          type: 'code',
+          source,
+          language,
+          error
+        };
+      }
     }
 
     return null;
@@ -280,8 +288,8 @@ export class ActiveCellManager implements IActiveCellManager {
       let currActiveCellError: CellError | null = null;
       if (currSharedModel && 'outputs' in currSharedModel) {
         currActiveCellError =
-          currSharedModel.outputs.find<CellError>(
-            (output): output is CellError => output.output_type === 'error'
+          (currSharedModel as any).outputs.find(
+            (output: any) => output.output_type === 'error'
           ) || null;
       }
 
