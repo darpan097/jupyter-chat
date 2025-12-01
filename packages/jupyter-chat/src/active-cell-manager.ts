@@ -1,8 +1,3 @@
-/*
- * Copyright (c) Jupyter Development Team.
- * Distributed under the terms of the Modified BSD License.
- */
-
 import { JupyterFrontEnd, LabShell } from '@jupyterlab/application';
 import { Cell, ICellModel } from '@jupyterlab/cells';
 import { IChangedArgs } from '@jupyterlab/coreutils';
@@ -20,11 +15,7 @@ type CellWithErrorContent = {
   type: 'code';
   source: string;
   language?: string;
-  error: {
-    name: string;
-    value: string;
-    traceback: string[];
-  };
+  error: CellError;
 };
 
 /**
@@ -175,11 +166,7 @@ export class ActiveCellManager implements IActiveCellManager {
         type: 'code',
         source: sharedModel.getSource(),
         language,
-        error: {
-          name: error.ename,
-          value: error.evalue,
-          traceback: error.traceback
-        }
+        error
       };
     }
 
