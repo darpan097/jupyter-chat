@@ -3,7 +3,7 @@ import json
 import tornado
 from jupyter_server.base.handlers import APIHandler
 from jupyter_server.utils import url_path_join
-from pytwd_rag.config.config_loader import PACKAGE_CONFIG
+from pytwd_ai.config.config_loader import PACKAGE_CONFIG
 
 
 class ConfigHandler(APIHandler):
@@ -12,7 +12,7 @@ class ConfigHandler(APIHandler):
         """Return configuration values from environment variables"""
 
         config = {
-            "feedbackUrl": PACKAGE_CONFIG.power_automate_flows.feedback_logging.get_url()
+            "feedbackUrl": PACKAGE_CONFIG.power_automate_flows.pyca_feedback_logging.get_url()
         }
         self.finish(json.dumps(config))
 
