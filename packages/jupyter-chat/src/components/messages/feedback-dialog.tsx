@@ -61,7 +61,7 @@ export function FeedbackDialog(props: IFeedbackDialogProps): JSX.Element {
       return;
     }
 
-    const feedbackUrl = process.env.TWD_FEEDBACK_LOGGING_FLOW;
+    const feedbackUrl = '';
     if (!feedbackUrl) {
       setError('Feedback URL not configured.');
       return;
