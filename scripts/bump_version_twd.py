@@ -15,7 +15,7 @@ VERSION_PATCH = 0
 VERSION_ALPHA = 1
 
 # increment this from 0 for our changes
-VERSION_TWD = 5
+VERSION_TWD = 6
 
 
 def bump(force=False, skip_if_dirty=False):
