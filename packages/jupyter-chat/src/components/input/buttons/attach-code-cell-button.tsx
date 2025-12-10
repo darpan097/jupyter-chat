@@ -104,7 +104,7 @@ export function AttachCodeCellButton(
         : data;
       const traceback = (errorOutput as any).traceback as string[];
 
-      const rawText = traceback.join('\n');
+      const rawText = traceback?.join('\n') ?? '';
       errorText = rawText.replace(ANSI_ESCAPE_RE, '');
     }
 
