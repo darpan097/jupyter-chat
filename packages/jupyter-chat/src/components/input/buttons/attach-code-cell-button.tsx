@@ -5,7 +5,6 @@ import { InputToolbarRegistry } from '../toolbar-registry';
 import { TooltippedButton } from '../../mui-extras/tooltipped-button';
 
 const ATTACH_CODE_CELL_BUTTON_CLASS = 'jp-chat-attach-code-cell-button';
-const ANSI_ESCAPE_RE = /\x1B\[[0-9;]*m/g;
 
 /**
  * The attach code cell or selection button.
@@ -62,68 +61,38 @@ export function AttachCodeCellButton(
     };
   }, [activeCellManager, selectionWatcher]);
 
-  const onclick = async () => {
+  const onclick = () => {
     // Priority: selection first, then active cell
     const selection = selectionWatcher.selection;
     let codeToInsert = '';
     let language = '';
-    let error: any = null;
 
     if (selection?.text) {
       // Use text selection
       codeToInsert = selection.text;
       language = selection.language || '';
     } else if (activeCellManager.available) {
-      // Use active cell content (prefer with error information)
-      const contentWithError = activeCellManager.getContent(true) as any;
-
-      if (contentWithError) {
-        codeToInsert = contentWithError.source;
-        language = contentWithError.language || '';
-        error = contentWithError.error;
-      } else {
-        const cellContent = activeCellManager.getContent(false);
-        if (cellContent) {
-          codeToInsert = cellContent.source;
-          language = cellContent.language || '';
-        }
+      // Use active cell content
+      const cellContent = activeCellManager.getContent(false);
+      if (cellContent) {
+        codeToInsert = cellContent.source;
+        language = cellContent.language || '';
       }
     }
 
-    if (!codeToInsert) {
-      return;
+    if (codeToInsert) {
+      // Format as a code block and insert into the chat message
+      const formattedCode = `\`\`\`${language}\n${codeToInsert}\n\`\`\``;
+
+      // Append to current message value with a newline if there's existing content
+      const currentValue = model.value;
+      model.value = currentValue
+        ? `${currentValue}\n\n${formattedCode}`
+        : formattedCode;
+
+      // Focus the input after inserting
+      model.focus();
     }
-
-    let errorText = '';
-    if (error) {
-      const url = (error as any).metadata.url as string;
-      const response = await fetch(url);
-      const data = await response.json();
-      const errorOutput = Array.isArray(data)
-        ? (data.find((o: any) => o.output_type === 'error') ?? data[0])
-        : data;
-      const traceback = (errorOutput as any).traceback as string[];
-
-      const rawText = traceback?.join('\n') ?? '';
-      errorText = rawText.replace(ANSI_ESCAPE_RE, '');
-    }
-
-    // Format as a code block and insert into the chat message
-    let formattedCode = `\`\`\`${language}\n${codeToInsert}\n\`\`\``;
-
-    // If there is an error, append it as a separate code block
-    if (errorText) {
-      formattedCode += `\n\n\`\`\`text\n${errorText}\n\`\`\``;
-    }
-
-    // Append to current message value with a newline if there's existing content
-    const currentValue = model.value;
-    model.value = currentValue
-      ? `${currentValue}\n\n${formattedCode}`
-      : formattedCode;
-
-    // Focus the input after inserting
-    model.focus();
   };
 
   return (

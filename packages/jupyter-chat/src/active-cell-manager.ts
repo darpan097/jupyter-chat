@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) Jupyter Development Team.
+ * Distributed under the terms of the Modified BSD License.
+ */
+
 import { JupyterFrontEnd, LabShell } from '@jupyterlab/application';
 import { Cell, ICellModel } from '@jupyterlab/cells';
 import { IChangedArgs } from '@jupyterlab/coreutils';
@@ -15,7 +20,11 @@ type CellWithErrorContent = {
   type: 'code';
   source: string;
   language?: string;
-  error: CellError;
+  error: {
+    name: string;
+    value: string;
+    traceback: string[];
+  };
 };
 
 /**
@@ -150,32 +159,28 @@ export class ActiveCellManager implements IActiveCellManager {
       return null;
     }
 
-    const source = sharedModel.getSource();
-
     // case where withError = false
     if (!withError) {
       return {
         type: sharedModel.cell_type,
-        source,
+        source: sharedModel.getSource(),
         language
       };
     }
 
-    // case where withError = true — compute the error directly from outputs
-    if ('outputs' in sharedModel) {
-      const outputs = (sharedModel as any).outputs as any[];
-      const error = outputs.find(
-        (output: any) => output.output_type === 'error'
-      ) as CellError | undefined;
-
-      if (error) {
-        return {
-          type: 'code',
-          source,
-          language,
-          error
-        };
-      }
+    // case where withError = true
+    const error = this._activeCellError;
+    if (error) {
+      return {
+        type: 'code',
+        source: sharedModel.getSource(),
+        language,
+        error: {
+          name: error.ename,
+          value: error.evalue,
+          traceback: error.traceback
+        }
+      };
     }
 
     return null;
@@ -288,8 +293,8 @@ export class ActiveCellManager implements IActiveCellManager {
       let currActiveCellError: CellError | null = null;
       if (currSharedModel && 'outputs' in currSharedModel) {
         currActiveCellError =
-          (currSharedModel as any).outputs.find(
-            (output: any) => output.output_type === 'error'
+          currSharedModel.outputs.find<CellError>(
+            (output): output is CellError => output.output_type === 'error'
           ) || null;
       }
 
