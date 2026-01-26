@@ -7,7 +7,7 @@
 
 import { LabIcon } from '@jupyterlab/ui-components';
 
-import chatSvgStr from '../style/icons/chat.svg';
+import chatSvgStr from '../style/icons/ai_stars.svg';
 import includeSelectionIconStr from '../style/icons/include-selection.svg';
 import readSvgStr from '../style/icons/read.svg';
 import replaceCellSvg from '../style/icons/replace-cell.svg';
