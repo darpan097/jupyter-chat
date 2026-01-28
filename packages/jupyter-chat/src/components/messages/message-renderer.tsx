@@ -45,6 +45,18 @@ type MessageRendererProps = {
    * the function to call to delete a message.
    */
   delete?: () => void;
+  /**
+   * Whether the message sender is a bot.
+   */
+  isBot?: boolean;
+  /**
+   * The message body.
+   */
+  messageBody?: string;
+  /**
+   * The index of the message in the messages list.
+   */
+  messageIndex?: number;
 };
 
 /**
@@ -103,7 +115,14 @@ function MessageRendererBase(props: MessageRendererProps): JSX.Element {
         ) : (
           <div ref={node => node && node.replaceChildren(renderedContent)} />
         ))}
-      <MessageToolbar edit={props.edit} delete={props.delete} />
+      <MessageToolbar
+        edit={props.edit}
+        delete={props.delete}
+        isBot={props.isBot}
+        messageBody={props.messageBody}
+        model={props.model}
+        messageIndex={props.messageIndex}
+      />
       {
         // Render a `CodeToolbar` element underneath each code block.
         // We use ReactDOM.createPortal() so each `CodeToolbar` element is able

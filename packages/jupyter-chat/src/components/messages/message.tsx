@@ -144,6 +144,9 @@ export const ChatMessage = forwardRef<HTMLDivElement, ChatMessageProps>(
             edit={canEdit ? startEdition : undefined}
             delete={canDelete ? () => deleteMessage(message.id) : undefined}
             rendered={props.renderedPromise}
+            isBot={message.sender.bot}
+            messageBody={message.body}
+            messageIndex={props.index}
           />
         )}
         {message.attachments && !edit && (

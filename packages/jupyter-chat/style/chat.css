@@ -54,9 +54,18 @@
   visibility: hidden;
   position: absolute;
   right: 2px;
-  top: 2px;
   font-size: var(--jp-ui-font-size0);
   color: var(--jp-ui-font-color3);
+}
+
+.jp-chat-toolbar-user {
+  top: 2px;
+}
+
+.jp-chat-toolbar-bot {
+  position: static;
+  visibility: visible;
+  margin-top: 4px;
 }
 
 .jp-chat-toolbar:hover {

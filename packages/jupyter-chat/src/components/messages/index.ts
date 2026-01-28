@@ -3,6 +3,7 @@
  * Distributed under the terms of the Modified BSD License.
  */
 
+export * from './feedback-dialog';
 export * from './footer';
 export * from './header';
 export * from './message';
